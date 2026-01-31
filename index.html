@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+ content="width=device-width,
+ initial-scale=1">
+<title>FOR YOU❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+  background:black;
+}
+
+canvas{
+  position:fixed;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+}
+#start{
+  position: fixed;
+  inset: 0;
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: pink;
+  font-size: 22px;
+  z-index: 10;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div id="start">💗 Chạm vào màn hình để bắt đầu 💗</div>
+<canvas id="canvas"></canvas>
+
+<audio id="music" loop>
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const startScreen = document.getElementById("start");
+const music = document.getElementById("music");
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+let showFalling = false;
+let showText = true;
+let showHeart = false;
+let time = 0;
+let colorTime = 0;
+let pulse = 1;
+let dkAlpha = 1;
+let dkTimer = 0;
+// =====FALLING WORDS====
+const fallWords = [
+"Love you","Cảm ơn anh","PND❤️QGK",
+"Bae","Em yêu anh",
+"Only you","❤️",
+"Yêu anh","❤️",
+"Choose you","My heart belongs to you","My love remains with you",
+"Still you",
+"Just us",
+"I love you", "14/02/2026",
+"Miss you","❤️",
+"No regrets",
+"My heart",
+"Be mine ❤️",
+"Together",
+"Only us",
+"Forever ❤️"];
+let fallingTexts = [];
+
+function createFalling(){
+  for(let i=0;i<35;i++){
+    fallingTexts.push({
+      text: fallWords[Math.floor(Math.random()*fallWords.length)],
+      x: Math.random()*canvas.width,
+      y: -Math.random()*canvas.height,
+      speed: 0.8 + Math.random()*1.6,
+      size: 18 + Math.random()*12,
+      alpha: 0.4 + Math.random()*0.6
+    });
+  }
+}
+
+function drawFalling(){
+    for(let f of fallingTexts){
+    ctx.globalAlpha = f.alpha;
+    ctx.fillStyle = "#ffb6e6";
+    ctx.font = f.size + "px Arial";
+    ctx.fillText(f.text, f.x, f.y);
+
+    f.y += f.speed;
+
+    if(f.y > canvas.height){
+      f.y = -20;
+      f.x = Math.random()*canvas.width;
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+// ===== STARS =====
+let stars = [];
+for(let i=0;i<160;i++){
+  stars.push({
+    x: Math.random()*canvas.width,
+    y: Math.random()*canvas.height,
+    r: Math.random()*1.8+0.4,
+    v: Math.random()*0.6+0.2,
+phase: Math.random()*Math.PI*2,   // ⭐ thêm cái này
+  speed: 0.02 + Math.random()*0.03 // ⭐ thêm cái này
+  });
+}
+
+// ===== TEXT =====
+const messages = [
+  "Một bầu trời đầy sao lấp lánh...",
+"Đây là món quà nhỏ",
+"Em muốn dành riêng cho anh",
+"Giữa ngân hà vô tận ấy",
+ "Chỉ có trái tim em vì anh mà tỏa sáng",
+"Lần này, em đã có thể ngắm sao cùng anh rồi",
+"Những vì sao do chính tay em tạo ra",
+"Mang theo tất cả yêu thương em muốn gửi đến anh",
+"Trong khoảnh khắc này,",
+"Chỉ có trái tim và bầu trời đầy sao",
+"Khoảng cách dường như tan biến",
+"Và chúng ta mãi ở bên nhau",
+"No matter the distance between us,",
+"My heart will always find you under the same sky. ❤️"
+  ];
+
+let textIndex = 0;
+let textAlpha = 0;
+let textTimer = 0;
+
+// ===== HEART =====
+let particles = [];
+
+function heart(t){
+  return {
+    x: 16 * Math.pow(Math.sin(t),3),
+    y: 13*Math.cos(t)
+      -5*Math.cos(2*t)
+      -2*Math.cos(3*t)
+      -Math.cos(4*t)
+  };
+}
+
+function createHeart(){
+  particles = [];
+  for(let t=0;t<Math.PI*2;t+=0.035){
+    let p = heart(t);
+
+    for(let i=0;i<9;i++){
+      let spread = Math.random()*2.5;
+      particles.push({
+        baseX: p.x + (Math.random()-0.5)*spread,
+        baseY: p.y + (Math.random()-0.5)*spread,
+        offset: Math.random()*Math.PI*2,
+        rise: Math.random()*canvas.height,
+        alpha: Math.random()*0.5 + 0.2,
+        size: Math.random()*2.7 + 1.2
+      });
+    }
+  }
+}
+
+// ===== DRAW =====
+function draw(){
+
+time += 0.01;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // nền
+  ctx.fillStyle="black";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // sao
+  // sao
+for(let s of stars){
+
+  s.y += s.v;
+  if(s.y > canvas.height) s.y = 0;
+
+  s.phase += s.speed;
+
+  let twinkle = Math.sin(s.phase) * 0.7 + 0.7;
+
+  ctx.shadowBlur = 8;          // ⭐ thêm glow NGAY TRƯỚC khi fill
+  ctx.shadowColor = "white";
+
+  ctx.fillStyle = `rgba(255,255,255,${twinkle})`;
+  ctx.beginPath();
+  ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+  ctx.fill();
+}
+
+ctx.shadowBlur = 0; // ⭐ reset SAU vòng lặp (rất quan trọng)
+  
+
+  // ===== TEXT INTRO =====
+  if(showText){
+    textTimer++;
+
+   if(textTimer < 60) textAlpha += 0.03;
+else if(textTimer > 180) textAlpha -= 0.017;
+
+textAlpha = Math.max(0, Math.min(1, textAlpha));
+    ctx.fillStyle = `rgba(255,180,210,${textAlpha})`;
+ctx.font = "28px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(messages[textIndex], canvas.width/2, canvas.height/2);
+
+    if(textAlpha <= 0){
+      textIndex++;
+      textTimer = 0;
+    
+     if(textIndex >= messages.length){
+
+  showText = false;
+  showHeart = true;
+
+  ctx.globalAlpha = 1;
+  ctx.clearRect(0,0,canvas.width,canvas.height); // xoá chữ Arial frame cũ
+
+  createHeart();
+
+}
+    }
+  }
+
+  // ===== HEART =====
+  if(showHeart){
+    time += 0.04;
+    colorTime += 0.02;
+
+    pulse = 1 + Math.sin(time)*0.07;
+
+    let cx = canvas.width/2;
+    let cy = canvas.height/2;
+
+    for(let p of particles){
+      p.offset += 0.06;
+      if(p.rise > 0) p.rise -= 2;
+
+      let x = cx + p.baseX*12*pulse + Math.cos(p.offset)*1.2;
+      let y = cy - p.baseY*12*pulse + Math.sin(p.offset)*1.2 + p.rise;
+
+      let r = 220 + Math.sin(colorTime)*35;
+      let g = 120 + Math.sin(colorTime+2)*40;
+      let b = 170 + Math.sin(colorTime+4)*40;
+
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = `rgba(${r},${g},${b},0.9)`;
+     let fade = Math.abs(p.baseY) - 8;
+fade = Math.max(0, Math.min(fade / 10, 1));
+
+// tăng sáng phần giữa
+let brightnessBoost = 1.5;
+
+let finalAlpha = Math.min( p.alpha * brightnessBoost * (1 - fade * 0.6),1);
+
+ctx.fillStyle = `rgba(${r},${g},${b},${finalAlpha})`;
+      ctx.beginPath();
+      ctx.arc(x,y,p.size,0,Math.PI*2);
+      ctx.fill();
+    }
+
+    // ===== CENTER TEXT (TỰ BIẾN MẤT) =====
+dkTimer++;
+
+if (dkTimer > 360) {
+    dkAlpha -= 0.005; // mờ dần
+dkAlpha = Math.max(0, dkAlpha);
+}
+
+if (dkAlpha > 0) {
+  ctx.globalAlpha = dkAlpha;
+
+ctx.save();
+ctx.translate(cx, cy);
+ctx.scale(pulse, pulse);
+
+ctx.font = "32px 'Great Vibes',cursive";
+ctx.textAlign = "center";
+ctx.textBaseline = "middle";
+ctx.fillStyle = "rgba(255,200,220,1)";
+ctx.fillText("Happy Valentine's Day", 0, 0);
+
+ctx.restore();
+
+ctx.globalAlpha = 1;
+ }
+if(dkAlpha === 0 && !showFalling){   // ⭐ khi text biến mất
+    showFalling = true;
+    createFalling();
+  }
+}
+
+// ⭐ vẽ chữ rơi
+if(showFalling){
+  drawFalling();
+}
+
+requestAnimationFrame(draw);
+}
+// ===== START =====
+startScreen.addEventListener("click", async () => {
+
+  startScreen.style.display = "none";
+
+  music.play();
+
+  draw();
+});
+</script>
+
+</body>
+</html>
